@@ -46,9 +46,9 @@
         
         const updateFavicon = () => {
             if (isEasterEggActive) {
-                favicon.href = '67-kid.png';
+                favicon.href = 'assets/easter-eggs/67-kid.png';
             } else {
-                favicon.href = getEffectiveTheme() === 'dark' ? 'logo-b.png' : 'logo-n.png';
+                favicon.href = getEffectiveTheme() === 'dark' ? 'assets/logos/logo-b.png' : 'assets/logos/logo-n.png';
             }
         };
         
@@ -400,3 +400,8 @@
         // ===== INIT =====
         setTheme(localStorage.getItem('evoMoyenne_theme') || 'auto');
         loadNotes();
+
+        // ===== CLOSE =====
+        window.deleteNote = deleteNote;
+        window.openModal = openModal;
+        window.closeModal = closeModal;
