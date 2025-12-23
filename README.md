@@ -1,4 +1,4 @@
-# 📈 evoMoyenne
+# 📈 evoMoyenne (par [evo](https://evosuite.qzz.io))
 
 > Une application web fluide pour calculer et suivre l'évolution de vos moyennes en un clin d'œil. 🚀
 
@@ -23,7 +23,7 @@ evoMoyenne est actuellement sous sa version 0.2.1.
 
 ### 🇬🇧 If you speak English :
 
-# 📈 evoMoyenne
+# 📈 evoMoyenne (by [evo](https://evosuite.qzz.io))
 
 > A fluid web application to calculate and track your grade averages in a blink. 🚀
 
