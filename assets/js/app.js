@@ -390,7 +390,7 @@
             } catch (e) {
                 if (e.name !== 'AbortError') showToast('Erreur', 'error');
             } finally {
-                card.style.cssText = 'left:-9999px;top:-9999px';
+                card.style.left = '-9999px';
             }
         });
         
