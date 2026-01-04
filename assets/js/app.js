@@ -48,7 +48,7 @@
             if (isEasterEggActive) {
                 favicon.href = 'assets/easter-eggs/67-kid.png';
             } else {
-                favicon.href = getEffectiveTheme() === 'dark' ? 'logo-b.png' : 'logo-n.png';
+                favicon.href = getEffectiveTheme() === 'dark' ? 'assets/logos/logo-b.png' : 'assets/logos/logo-n.png';
             }
         };
         
