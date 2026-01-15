@@ -1,138 +1,268 @@
-const SUBJECTS = {
-    "Mathématiques": 3, "Français": 3, "Anglais": 3, "LV2": 2,
+// --- Configuration & Data ---
+const defaultCoefs = {
+    "Mathématiques": 3, "Français": 3, "Anglais": 3,
+    "Espagnol": 2, "Allemand": 2,
     "Physique-Chimie": 1, "SVT": 1, "EPS": 1, "Technologie": 1,
     "Arts Plastiques": 1, "Musique": 1, "Latin": 1
 };
 
-let grades = JSON.parse(localStorage.getItem('ev_grades')) || [];
-let history = JSON.parse(localStorage.getItem('ev_history')) || {};
-let chart = null;
+// On charge les notes sauvegardées ou un tableau vide
+let grades = JSON.parse(localStorage.getItem('evoGrades')) || [];
+let chartInstance = null;
+let showAllHistory = false;
 
-document.addEventListener('DOMContentLoaded', () => {
-    initUI();
-    update();
-});
+// --- DOM Elements ---
+const noteInput = document.getElementById('noteInput');
+const matiereSelect = document.getElementById('matiereSelect');
+const typeSelect = document.getElementById('typeSelect');
+const addBtn = document.getElementById('addGradeBtn');
+const gradesList = document.getElementById('gradesList');
+const globalAvgDisplay = document.getElementById('globalAverage');
+const clearAllBtn = document.getElementById('clearAllBtn');
+const toggleHistoryBtn = document.getElementById('toggleHistoryBtn');
 
-function initUI() {
-    const sel = document.getElementById('subject-select');
-    Object.keys(SUBJECTS).forEach(s => sel.innerHTML += `<option value="${s}">${s} (x${SUBJECTS[s]})</option>`);
-
-    document.querySelectorAll('.nav-item').forEach(btn => {
-        btn.onclick = () => {
-            document.querySelectorAll('.nav-item, .page').forEach(el => el.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById(btn.dataset.target).classList.add('active');
-        };
+// --- Initialization ---
+function init() {
+    populateMatieres();
+    updateUI();
+    initChart();
+    
+    // Events
+    addBtn.addEventListener('click', addGrade);
+    clearAllBtn.addEventListener('click', clearAll);
+    toggleHistoryBtn.addEventListener('click', () => {
+        showAllHistory = !showAllHistory;
+        toggleHistoryBtn.textContent = showAllHistory ? "Réduire" : "Tout voir";
+        renderHistory();
     });
 
-    document.getElementById('add-btn').onclick = submit;
-    document.getElementById('grade-input').onkeyup = (e) => e.key === 'Enter' && submit();
-    document.getElementById('clear-all-btn').onclick = () => {
-        if(confirm("Effacer tout ?")) { grades = []; history = {}; save(); location.reload(); }
-    };
-    
-    document.querySelectorAll('.emoji-opt').forEach(e => {
-        e.onclick = () => {
-            document.querySelectorAll('.emoji-opt').forEach(x => x.classList.remove('selected'));
-            e.classList.add('selected');
-        };
+    // Workflow Rapide: Touche Entrée
+    noteInput.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') addGrade();
     });
 }
 
-function submit() {
-    const val = document.getElementById('grade-input').value;
-    const sub = document.getElementById('subject-select').value;
-    const type = document.querySelector('input[name="grade-type"]:checked').value;
+function populateMatieres() {
+    // Si on a déjà des matières custom, on pourrait les merger ici, 
+    // pour l'instant on utilise la liste par défaut + celles présentes dans l'historique
+    const subjects = new Set(Object.keys(defaultCoefs));
+    grades.forEach(g => subjects.add(g.subject));
     
-    if(!val || val < 0 || val > 20) return;
-    
-    grades.push({ id: Date.now(), val: parseFloat(val), sub, type, coef: SUBJECTS[sub] });
-    save();
-    update();
-    document.getElementById('grade-input').value = '';
-    document.getElementById('grade-input').focus();
+    matiereSelect.innerHTML = '';
+    subjects.forEach(sub => {
+        const opt = document.createElement('option');
+        opt.value = sub;
+        opt.textContent = sub;
+        matiereSelect.appendChild(opt);
+    });
 }
 
-function update() {
-    const isStd = document.getElementById('calc-mode-toggle').checked;
-    let sum = 0, div = 0;
-    
-    grades.forEach(g => {
-        let w = isStd ? g.coef : 1;
-        sum += g.val * w; div += w;
-    });
+// --- Core Logic ---
 
-    const avg = div ? (sum / div).toFixed(2) : "--";
-    document.getElementById('main-average').innerText = avg;
+function addGrade() {
+    const val = parseFloat(noteInput.value);
+    const subject = matiereSelect.value;
+    const type = typeSelect.value; // 'real' ou 'sim'
 
-    const today = new Date().toISOString().split('T')[0];
-    if(avg !== "--") {
-        if(history[today] < avg && history[today]) confetti({colors:['#000']});
-        history[today] = avg;
-        save();
+    if (isNaN(val) || val < 0 || val > 20) {
+        alert("Met une note valide entre 0 et 20, bg.");
+        return;
     }
 
+    const newGrade = {
+        id: Date.now(),
+        value: val,
+        subject: subject,
+        coef: defaultCoefs[subject] || 1, // Fallback coef 1
+        type: type,
+        date: new Date().toISOString()
+    };
+
+    grades.unshift(newGrade); // Ajout au début (plus récent)
+    saveData();
+    updateUI();
+
+    // Optimisation Flux de Saisie
+    noteInput.value = ''; 
+    noteInput.focus(); 
+    // On ne reset PAS le matiereSelect (Persistance demandée)
+}
+
+function updateUI() {
     renderHistory();
-    renderChart();
+    calculateAverage();
 }
 
 function renderHistory() {
-    const list = document.getElementById('history-list');
-    list.innerHTML = grades.slice(-5).reverse().map(g => `
-        <li class="history-item ${g.type}">
-            <span><strong>${g.sub}</strong>: ${g.val}/20</span>
-            <button onclick="del(${g.id})" style="border:none; background:none;">❌</button>
-        </li>
-    `).join('');
+    gradesList.innerHTML = '';
+    
+    // Tri par date décroissante (le plus récent en haut)
+    // Note: grades est déjà rempli avec unshift, mais on s'assure du tri au cas où
+    const sortedGrades = [...grades].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // Slice pour l'affichage (5 ou tout)
+    const displayGrades = showAllHistory ? sortedGrades : sortedGrades.slice(0, 5);
+
+    displayGrades.forEach(g => {
+        const li = document.createElement('li');
+        // Ajout classe 'sim' si simulation pour style (italique/opacité)
+        li.className = `grade-item ${g.type === 'sim' ? 'sim' : ''}`;
+        
+        li.innerHTML = `
+            <div class="grade-info">
+                <strong>${g.subject} : ${g.value}/20</strong>
+                <small>Coef ${g.coef} • ${g.type === 'sim' ? 'Simulation' : 'Réel'}</small>
+            </div>
+            <div class="actions">
+                <button class="btn-edit" onclick="editGrade(${g.id})"><i class="fa-solid fa-pen"></i></button>
+                <button class="btn-del" onclick="deleteGrade(${g.id})"><i class="fa-solid fa-trash"></i></button>
+            </div>
+        `;
+        gradesList.appendChild(li);
+    });
+
+    // Gestion visibilité bouton "Tout voir"
+    toggleHistoryBtn.style.display = grades.length > 5 ? 'block' : 'none';
 }
 
-window.del = (id) => {
-    if(navigator.vibrate) navigator.vibrate(10);
-    grades = grades.filter(g => g.id !== id);
-    save(); update();
+function calculateAverage() {
+    let totalPoints = 0;
+    let totalCoefs = 0;
+
+    grades.forEach(g => {
+        totalPoints += g.value * g.coef;
+        totalCoefs += g.coef;
+    });
+
+    const avg = totalCoefs > 0 ? (totalPoints / totalCoefs).toFixed(2) : "--";
+    globalAvgDisplay.textContent = avg + "/20";
+    
+    updateChart(avg);
+}
+
+// --- Actions (Edit / Delete) ---
+
+// Attach functions to window so onclick in HTML works
+window.deleteGrade = function(id) {
+    const grade = grades.find(g => g.id === id);
+    if (!grade) return;
+
+    // Logique demandée: Confirmation avec mention du mode
+    const msg = `Tu veux vraiment supprimer cette note (${grade.value}) en mode ${grade.type === 'sim' ? 'SIMULATION' : 'RÉEL'} ?`;
+    
+    if (confirm(msg)) {
+        grades = grades.filter(g => g.id !== id);
+        saveData();
+        updateUI();
+    }
 };
 
-function renderChart() {
-    const ctx = document.getElementById('evolutionChart');
-    if(chart) chart.destroy();
-    const labels = Object.keys(history).sort();
-    chart = new Chart(ctx, {
+window.editGrade = function(id) {
+    const grade = grades.find(g => g.id === id);
+    if (!grade) return;
+
+    // On pré-remplit les champs pour modif
+    noteInput.value = grade.value;
+    matiereSelect.value = grade.subject;
+    typeSelect.value = grade.type;
+
+    // Petit trick UX: On supprime l'ancienne pour "laisser place" à la nouvelle version
+    // avec un confirm spécifique comme demandé.
+    const msg = `Modification de note en cours (Mode : ${grade.type === 'sim' ? 'SIMULATION' : 'RÉEL'}). Continuer ?`;
+    if(confirm(msg)) {
+        grades = grades.filter(g => g.id !== id);
+        saveData();
+        updateUI();
+        noteInput.focus();
+    } else {
+        // Reset inputs si annulé
+        noteInput.value = '';
+    }
+};
+
+function clearAll() {
+    if (confirm("Wsh t'es sûr de vouloir tout effacer ? C'est irréversible.")) {
+        grades = [];
+        saveData();
+        updateUI();
+    }
+}
+
+// --- Utils ---
+function saveData() {
+    localStorage.setItem('evoGrades', JSON.stringify(grades));
+}
+
+// --- Chart.js ---
+function initChart() {
+    const ctx = document.getElementById('moyenneChart').getContext('2d');
+    chartInstance = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: labels.map(l => l.split('-').slice(1).join('/')),
-            datasets: [{ data: labels.map(l => history[l]), borderColor: '#000', tension: 0.3, pointRadius: 0 }]
+            labels: [], // Dates ou Index
+            datasets: [{
+                label: 'Évolution',
+                data: [],
+                borderColor: '#4f46e5',
+                tension: 0.4,
+                fill: true,
+                backgroundColor: 'rgba(79, 70, 229, 0.1)'
+            }]
         },
-        options: { plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{display:false}} }
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { min: 0, max: 20 }
+            }
+        }
     });
 }
 
-function save() {
-    localStorage.setItem('ev_grades', JSON.stringify(grades));
-    localStorage.setItem('ev_history', JSON.stringify(history));
+function updateChart(currentAvg) {
+    if (!chartInstance || currentAvg === "--") return;
+
+    // Simple visualisation : on montre l'évolution de la moyenne cumulée
+    // On recalcule la moyenne historique étape par étape
+    let tempPoints = 0;
+    let tempCoefs = 0;
+    const historyData = [];
+    const labels = [];
+
+    // On trie par date croissante pour le graphe
+    const chronologicalGrades = [...grades].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    chronologicalGrades.forEach((g, index) => {
+        tempPoints += g.value * g.coef;
+        tempCoefs += g.coef;
+        historyData.push((tempPoints / tempCoefs).toFixed(2));
+        labels.push(index + 1);
+    });
+
+    chartInstance.data.labels = labels;
+    chartInstance.data.datasets[0].data = historyData;
+    chartInstance.update();
 }
 
-window.openBottomSheet = () => document.getElementById('bottom-sheet').style.display = 'flex';
-window.closeBottomSheet = () => document.getElementById('bottom-sheet').style.display = 'none';
-window.openExportModal = () => document.getElementById('share-overlay').style.display = 'flex';
+// --- Modale Info Logic ---
+const modal = document.getElementById("infoModal");
+const btn = document.getElementById("infoBtn");
+const span = document.getElementsByClassName("close")[0];
 
-window.generateShareImage = () => {
-    const name = document.getElementById('share-name').value || "Adam";
-    document.getElementById('exp-name').innerText = name;
-    document.getElementById('exp-emoji').innerText = document.querySelector('.emoji-opt.selected')?.innerText || "😎";
-    document.getElementById('exp-note').innerText = document.getElementById('main-average').innerText;
-    
-    html2canvas(document.getElementById('export-template')).then(canvas => {
-        const link = document.createElement('a');
-        link.download = `evoMoyenne_${name}.png`;
-        link.href = canvas.toDataURL();
-        link.click();
+btn.onclick = () => modal.style.display = "block";
+span.onclick = () => modal.style.display = "none";
+window.onclick = (event) => { if (event.target == modal) modal.style.display = "none"; };
+
+// --- Tab Logic ---
+document.querySelectorAll('.tab-btn').forEach(button => {
+    button.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        button.classList.add('active');
+        document.getElementById(button.dataset.tab).classList.add('active');
     });
-};
+});
 
-window.exportPDF = () => {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.text("Bulletin evoMoyenne", 20, 20);
-    grades.forEach((g, i) => doc.text(`${g.sub}: ${g.val}/20`, 20, 40 + (i*10)));
-    doc.save("bulletin.pdf");
-};
+// Start
+init();
