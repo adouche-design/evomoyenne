@@ -2,156 +2,86 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>evoMoyenne</title>
-    
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#000000">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
-    
-    <link rel="stylesheet" href="assets/css/style.css">
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 
-    <main id="app">
-        <section id="page-home" class="page active">
-            <div class="header-large">
-                <h1>Moyenne Générale</h1>
-                <div class="big-score-container">
-                    <span id="main-average">--/20</span>
-                    <div id="evolution-badge" class="badge">Initialisation...</div>
+    <header>
+        <div class="logo">evoMoyenne</div>
+        <button id="infoBtn" class="icon-btn"><i class="fa-solid fa-circle-info"></i></button>
+    </header>
+
+    <main>
+        <div class="card general-avg-card">
+            <h2>Moyenne Générale</h2>
+            <div class="big-number" id="globalAverage">--/20</div>
+            <div class="chart-container">
+                <canvas id="moyenneChart"></canvas>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="labo">🧪 Le Labo</button>
+            <button class="tab-btn" data-tab="ecole">🎓 EcoleDirecte</button>
+        </div>
+
+        <section id="labo" class="tab-content active">
+            
+            <div class="input-group">
+                <label>Matière</label>
+                <select id="matiereSelect">
+                    </select>
+            </div>
+
+            <div class="row">
+                <div class="input-group">
+                    <label>Note (/20)</label>
+                    <input type="number" id="noteInput" placeholder="Ex: 15" step="0.25">
+                </div>
+                <div class="input-group">
+                    <label>Type</label>
+                    <select id="typeSelect">
+                        <option value="real">Réel</option>
+                        <option value="sim">Simulation</option>
+                    </select>
                 </div>
             </div>
 
-            <div class="card m3-surface-container">
-                <canvas id="evolutionChart"></canvas>
-            </div>
+            <button id="addGradeBtn" class="primary-btn">Ajouter la note</button>
 
-            <div class="stats-grid">
-                <div class="card mini-card">
-                    <h3>🏆 Top 3</h3>
-                    <ul id="top-list" class="stat-list"></ul>
-                </div>
-                <div class="card mini-card">
-                    <h3>💀 Flop 3</h3>
-                    <ul id="flop-list" class="stat-list"></ul>
-                </div>
-            </div>
+            <hr class="divider">
 
-            <div class="card info-card">
-                <span class="material-symbols-rounded">construction</span>
-                <p>On travaille dur là-dessus !</p>
+            <div class="history-header">
+                <h3>Historique</h3>
+                <button id="clearAllBtn" class="text-danger">Tout effacer</button>
             </div>
-
-            <button class="btn btn-tonal full-width" onclick="openBottomSheet()">+ d'infos</button>
+            
+            <ul id="gradesList" class="grades-list">
+                </ul>
+            <button id="toggleHistoryBtn" class="secondary-btn">Tout voir</button>
         </section>
 
-        <section id="page-labo" class="page">
-            <div class="header-row" style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2>Labo</h2>
-                <div class="toggle-container">
-                    <span style="font-size: 12px; opacity: 0.7;">Brut</span>
-                    <label class="switch">
-                        <input type="checkbox" id="calc-mode-toggle" checked>
-                        <span class="slider round"></span>
-                    </label>
-                    <span style="font-size: 12px; opacity: 0.7;">Std</span>
+        <section id="ecole" class="tab-content">
+            <div class="placeholder-content">
+                <p>Connexion EcoleDirecte active.</p>
                 </div>
-            </div>
-
-            <div class="card m3-surface-container form-card">
-                <select id="subject-select" class="m3-input"></select>
-                <div class="row-inputs">
-                    <input type="number" id="grade-input" placeholder="Note /20" step="0.5" inputmode="decimal">
-                    <div class="radio-group">
-                        <label class="radio-chip">
-                            <input type="radio" name="grade-type" value="real" checked>
-                            <span>Réel</span>
-                        </label>
-                        <label class="radio-chip">
-                            <input type="radio" name="grade-type" value="ghost">
-                            <span>Fantôme</span>
-                        </label>
-                    </div>
-                </div>
-                <button id="add-btn" class="btn btn-filled">Ajouter (Entrée)</button>
-            </div>
-
-            <div class="history-section">
-                <div class="header-row" style="display:flex; justify-content: space-between; align-items: center; margin: 20px 0 10px;">
-                    <h3>Dernières notes</h3>
-                    <button class="btn-text" id="clear-all-btn" style="color: #666;">Tout effacer</button>
-                </div>
-                <ul id="history-list"></ul>
-            </div>
-
-            <div class="fab-actions" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:20px;">
-                <button class="btn btn-outlined" onclick="openExportModal()">Partager</button>
-                <button class="btn btn-outlined" onclick="exportPDF()">PDF</button>
-            </div>
         </section>
     </main>
 
-    <nav class="navbar">
-        <button class="nav-item active" data-target="page-home">
-            <span class="material-symbols-rounded icon">home</span>
-            <span class="label">Accueil</span>
-        </button>
-        <button class="nav-item" data-target="page-labo">
-            <span class="material-symbols-rounded icon">science</span>
-            <span class="label">Labo</span>
-        </button>
-    </nav>
-
-    <div id="bottom-sheet" class="overlay">
-        <div class="sheet-content">
-            <div class="drag-handle"></div>
-            <h2>Connexion ÉcoleDirecte</h2>
-            <input type="text" placeholder="Identifiant" class="m3-input" style="margin-top: 15px;">
-            <input type="password" placeholder="Mot de passe" class="m3-input" style="margin-top: 10px;">
-            <button class="btn btn-filled full-width" style="margin-top:20px;">Se connecter</button>
-            <button class="btn btn-text full-width" onclick="closeBottomSheet()">Fermer</button>
-        </div>
-    </div>
-
-    <div id="share-overlay" class="overlay">
-        <div class="sheet-content">
-            <h3>Partager ton score 📸</h3>
-            <input type="text" id="share-name" placeholder="Ton Prénom" class="m3-input">
-            <div class="emoji-grid">
-                <span class="emoji-opt">📈</span><span class="emoji-opt">😎</span>
-                <span class="emoji-opt">🎯</span><span class="emoji-opt">🤔</span>
-                <span class="emoji-opt">📉</span><span class="emoji-opt">💀</span>
-                <span class="emoji-opt">🫠</span>
+    <div id="infoModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>À propos</h2>
+            <p>evoMoyenne</p>
+            <p>Calculateur de moyenne optimisé.</p>
             </div>
-            <button class="btn btn-filled full-width" onclick="generateShareImage()">Télécharger l'image</button>
-            <button class="btn btn-text full-width" onclick="document.getElementById('share-overlay').style.display='none'">Annuler</button>
-        </div>
-    </div>
-
-    <div id="export-template" style="position:fixed; left:-9999px; width: 350px; background: white; padding: 40px; text-align: center;">
-        <div id="exp-emoji" style="font-size: 60px;">😎</div>
-        <h2 id="exp-name" style="margin: 10px 0; color: #000; font-family: 'Inter';">Adam</h2>
-        <p style="color: #666; text-transform: uppercase; font-size: 10px; font-family: 'Inter';">Moyenne Générale</p>
-        <h1 id="exp-note" style="font-size: 80px; margin: 10px 0; font-weight: 800; font-family: 'Inter';">14.5</h1>
-        <p style="font-size: 10px; color: #aaa; font-family: 'Inter';">calculé avec evoMoyenne</p>
     </div>
 
     <script src="assets/js/app.js"></script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js');
-        }
-    </script>
 </body>
 </html>
