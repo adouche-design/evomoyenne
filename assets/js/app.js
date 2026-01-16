@@ -587,8 +587,7 @@
             showSnackbar('Coefficients sauvegardés');
         }
 
-        // ==================== SHARE & EXPORT ====================
-        // Extended emoji list with negative/neutral states
+        // ==================== SHARE ====================
         const emojis = ['📈', '😎', '🎯', '🏆', '⭐', '🚀', '💪', '🔥', '✨', '🎓', '🤔', '📉', '💀', '🫠', '😅', '🙃'];
         let selectedEmoji = '📈';
 
@@ -617,15 +616,14 @@
                 return;
             }
             
-            // New card design without header title
             const preview = document.getElementById('share-preview');
             preview.innerHTML = `
                 <div class="generated-card" id="generated-card">
                     <div class="generated-card-emoji">${selectedEmoji}</div>
                     <div class="generated-card-name">${name}</div>
-                    <div class="generated-card-label">Moyenne Générale</div>
+                    <div class="generated-card-label">Ma moyenne générale</div>
                     <div class="generated-card-average">${avg.toFixed(2)}</div>
-                    <div class="generated-card-footer">calculé avec evoMoyenne</div>
+                    <div class="generated-card-footer">calculé avec evoMoyenne.qzz.io</div>
                 </div>
             `;
             
@@ -704,27 +702,24 @@
             });
             
             doc.setFontSize(9);
-            doc.text('Généré avec evoMoyenne', 105, 285, { align: 'center' });
+            doc.text('Généré avec evoMoyenne.qzz.io', 105, 285, { align: 'center' });
             
-            doc.save('bulletin-evomoyenne.pdf');
+            doc.save('bulletin-evomoyenne-${date}.pdf');
             showSnackbar('Bulletin téléchargé !');
         }
 
-        // ==================== NAVIGATION - No Slide ====================
+        // ==================== NAVIGATION ====================
         let currentPage = 'accueil';
 
         function switchPage(pageName) {
             currentPage = pageName;
             
-            // Hide all pages
             document.querySelectorAll('.page').forEach(page => {
                 page.classList.add('hidden');
             });
             
-            // Show selected page
             document.getElementById(`page-${pageName}`).classList.remove('hidden');
             
-            // Update nav
             document.querySelectorAll('.nav-item').forEach(item => {
                 const icon = item.querySelector('.material-symbols-rounded');
                 if (item.dataset.page === pageName) {
