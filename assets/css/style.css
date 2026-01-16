@@ -37,8 +37,8 @@
         }
 
         [data-theme="dark"] {
-            --md-sys-color-primary: #e0e0e0;
-            --md-sys-color-on-primary: #1a1a1a;
+            --md-sys-color-primary: #1a1a1a;
+            --md-sys-color-on-primary: #e0e0e0;
             --md-sys-color-primary-container: #3a3a3a;
             --md-sys-color-on-primary-container: #e0e0e0;
             --md-sys-color-surface: #121212;
