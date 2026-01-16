@@ -798,15 +798,12 @@
 
         // ==================== EVENT LISTENERS ====================
         function initEventListeners() {
-            // Navigation - instant switch
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.addEventListener('click', () => switchPage(item.dataset.page));
             });
             
-            // Theme toggle
             document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
             
-            // Mode toggle
             document.getElementById('mode-toggle').addEventListener('click', () => {
                 const toggle = document.getElementById('mode-toggle');
                 toggle.classList.toggle('active');
@@ -821,32 +818,26 @@
                 hapticFeedback();
             });
             
-            // Add note
             document.getElementById('add-note-btn').addEventListener('click', addNote);
             
-            // Add subject
             document.getElementById('add-subject-btn').addEventListener('click', addSubject);
             
-            // Ghost checkbox
             document.getElementById('ghost-checkbox').addEventListener('click', function() {
                 this.classList.toggle('checked');
                 hapticFeedback();
             });
             
-            // Edit ghost checkbox
             document.getElementById('edit-ghost-checkbox').addEventListener('click', function() {
                 this.classList.toggle('checked');
                 hapticFeedback();
             });
             
-            // Target input
             document.getElementById('target-input').addEventListener('change', function() {
                 data.target = parseFloat(this.value) || 14;
                 saveData();
                 updateTargetProgress();
             });
             
-            // Info sheet
             document.getElementById('info-btn').addEventListener('click', () => {
                 document.getElementById('info-sheet').classList.add('visible');
             });
@@ -861,7 +852,6 @@
                 }
             });
             
-            // Coef dialog
             document.getElementById('coef-dialog-btn').addEventListener('click', openCoefDialog);
             
             document.getElementById('close-coef-dialog').addEventListener('click', () => {
@@ -876,7 +866,6 @@
                 }
             });
             
-            // Edit dialog
             document.getElementById('close-edit-dialog').addEventListener('click', () => {
                 document.getElementById('edit-dialog').classList.remove('visible');
                 editingNote = null;
@@ -891,7 +880,6 @@
                 }
             });
             
-            // Share dialog
             document.getElementById('share-card-btn').addEventListener('click', () => {
                 document.getElementById('share-form').style.display = 'block';
                 document.getElementById('share-preview').style.display = 'none';
@@ -910,7 +898,6 @@
                 }
             });
             
-            // PDF export
             document.getElementById('export-pdf-btn').addEventListener('click', exportPDF);
         }
 
@@ -951,7 +938,6 @@
             initChart();
             updateAll();
             
-            // Set initial mode toggle state
             if (data.mode === 'brut') {
                 document.getElementById('mode-toggle').classList.add('active');
                 document.getElementById('mode-brut-label').classList.add('active');
