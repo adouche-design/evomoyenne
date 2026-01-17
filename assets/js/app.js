@@ -1,4 +1,4 @@
-        // ==================== DATA MANAGEMENT ====================
+// ==================== DATA MANAGEMENT ====================
         const defaultSubjects = [
             { id: 'maths', name: 'Mathématiques', coef: 3, notes: [], isDefault: true },
             { id: 'francais', name: 'Français', coef: 3, notes: [], isDefault: true },
@@ -18,7 +18,6 @@
             subjects: [],
             history: {},
             target: 20,
-            mode: 'standard',
             theme: 'dark'
         };
 
@@ -30,7 +29,7 @@
                 data.subjects = JSON.parse(JSON.stringify(defaultSubjects));
             }
             const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-            applyTheme(data.theme);
+            applyTheme(systemTheme);
         }
 
         function saveData() {
@@ -95,11 +94,10 @@
 
         function saveHistory() {
             const today = getTodayKey();
-            const generale = calculateGeneralAverage('standard');
-            const brute = calculateGeneralAverage('brut');
+            const avg = calculateGeneralAverage();
             
-            if (generale !== null) {
-                data.history[today] = { generale, brute };
+            if (avg !== null) {
+                data.history[today] = parseFloat(avg.toFixed(2));
                 saveData();
             }
         }
@@ -111,8 +109,11 @@
             const today = keys[keys.length - 1];
             const yesterday = keys[keys.length - 2];
             
-            const current = data.history[today]?.generale;
-            const previous = data.history[yesterday]?.generale;
+            let current = data.history[today];
+            let previous = data.history[yesterday];
+            
+            if (typeof current === 'object' && current !== null) current = current.generale;
+            if (typeof previous === 'object' && previous !== null) previous = previous.generale;
             
             if (current && previous) {
                 return current - previous;
@@ -122,7 +123,7 @@
 
         // ==================== UI UPDATES ====================
         function updateAverageDisplay() {
-            const avg = calculateGeneralAverage(data.mode);
+            const avg = calculateGeneralAverage();
             const avgEl = document.getElementById('average-value');
             const evolutionEl = document.getElementById('average-evolution');
             const evolutionText = document.getElementById('evolution-text');
@@ -165,7 +166,7 @@
         }
 
         function updateTargetProgress() {
-            const avg = calculateGeneralAverage(data.mode);
+            const avg = calculateGeneralAverage();
             const target = parseFloat(document.getElementById('target-input').value) || 20;
             
             const progressBar = document.getElementById('target-progress');
@@ -364,7 +365,6 @@
             if (!evolutionChart) return;
             
             const keys = Object.keys(data.history).sort().slice(-14);
-            const isStandard = data.mode === 'standard';
             
             evolutionChart.data.labels = keys.map(k => {
                 const date = new Date(k);
@@ -372,7 +372,10 @@
             });
             
             evolutionChart.data.datasets[0].data = keys.map(k => {
-                return isStandard ? data.history[k].generale : data.history[k].brute;
+                if (typeof data.history[k] === 'object' && data.history[k] !== null) {
+                    return data.history[k].generale;
+                }
+                return data.history[k];
             });
             
             const primaryColor = getComputedStyle(document.body).getPropertyValue('--md-sys-color-primary').trim();
@@ -609,7 +612,7 @@
 
         async function generateShareCard() {
             const name = document.getElementById('share-name').value.trim() || 'Élève';
-            const avg = calculateGeneralAverage(data.mode);
+            const avg = calculateGeneralAverage();
             
             if (avg === null) {
                 showSnackbar('Ajoute des notes d\'abord');
@@ -653,7 +656,7 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
-            const avg = calculateGeneralAverage(data.mode);
+            const avg = calculateGeneralAverage();
             const date = new Date().toLocaleDateString('fr-FR');
             
             doc.setFontSize(24);
@@ -703,10 +706,10 @@
                 
             doc.setFontSize(9);
             doc.setTextColor(0, 0, 0);
-            doc.text('Généré avec ', 95, 285, { align: 'right' }); 
-
+            doc.text('Généré avec ', 104, 285, { align: 'right' }); 
+            
             doc.setTextColor(0, 0, 255);
-            doc.textWithLink('evoMoyenne.qzz.io', 96, 285, { url: 'https://evoMoyenne.qzz.io' });
+            doc.textWithLink('evoMoyenne.qzz.io', 105, 285, { url: 'https://evoMoyenne.qzz.io' });
 
             const dateF = new Date().toLocaleDateString('fr-FR').replace(/\//g, '-');
             doc.save(`bulletin-evomoyenne-${dateF}.pdf`);
@@ -812,20 +815,6 @@
             });
             
             document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-            
-            document.getElementById('mode-toggle').addEventListener('click', () => {
-                const toggle = document.getElementById('mode-toggle');
-                toggle.classList.toggle('active');
-                data.mode = toggle.classList.contains('active') ? 'brut' : 'standard';
-                
-                document.getElementById('mode-standard-label').classList.toggle('active', data.mode === 'standard');
-                document.getElementById('mode-brut-label').classList.toggle('active', data.mode === 'brut');
-                
-                saveData();
-                updateAverageDisplay();
-                updateChart();
-                hapticFeedback();
-            });
             
             document.getElementById('add-note-btn').addEventListener('click', addNote);
             
@@ -951,12 +940,4 @@
             initShareDialog();
             initChart();
             updateAll();
-            
-            if (data.mode === 'brut') {
-                document.getElementById('mode-toggle').classList.add('active');
-                document.getElementById('mode-brut-label').classList.add('active');
-                document.getElementById('mode-standard-label').classList.remove('active');
-            } else {
-                document.getElementById('mode-standard-label').classList.add('active');
-            }
         });
