@@ -29,6 +29,7 @@
             } else {
                 data.subjects = JSON.parse(JSON.stringify(defaultSubjects));
             }
+            const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
             applyTheme(data.theme);
         }
 
@@ -908,6 +909,11 @@
             });
             
             document.getElementById('export-pdf-btn').addEventListener('click', exportPDF);
+                
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                applyTheme(e.matches ? 'dark' : 'light');
+                    
+            });
         }
 
         // ==================== PWA SERVICE WORKER ====================
