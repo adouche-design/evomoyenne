@@ -707,9 +707,6 @@
 
             doc.setTextColor(0, 0, 255);
             doc.textWithLink('evoMoyenne.qzz.io', 96, 285, { url: 'https://evoMoyenne.qzz.io' });
-                
-            doc.setFontSize(9);
-            doc.text('Généré avec evoMoyenne.qzz.io', 105, 285, { align: 'center' });
 
             const dateF = new Date().toLocaleDateString('fr-FR').replace(/\//g, '-');
             doc.save(`bulletin-evomoyenne-${dateF}.pdf`);
