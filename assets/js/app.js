@@ -700,12 +700,21 @@
                     y = 20;
                 }
             });
-            
+                
+            doc.setFontSize(9);
+            doc.setTextColor(0, 0, 0);
+            doc.text('Généré avec ', 95, 285, { align: 'right' }); 
+
+            doc.setTextColor(0, 0, 255);
+            doc.textWithLink('evoMoyenne.qzz.io', 96, 285, { url: 'https://evoMoyenne.qzz.io' });
+                
             doc.setFontSize(9);
             doc.text('Généré avec evoMoyenne.qzz.io', 105, 285, { align: 'center' });
-            
-            doc.save('bulletin-evomoyenne-${date}.pdf');
+
+            const dateF = new Date().toLocaleDateString('fr-FR').replace(/\//g, '-');
+            doc.save(`bulletin-evomoyenne-${dateF}.pdf`);
             showSnackbar('Bulletin téléchargé !');
+
         }
 
         // ==================== NAVIGATION ====================
@@ -750,7 +759,7 @@
             githubLogo.style.filter = theme === 'dark' ? 'invert(1)' : 'invert(0)';
 
             const edLogo = document.getElementById('ed-logo');
-            githubLogo.style.filter = theme === 'dark' ? 'invert(1)' : 'invert(0)';
+            edLogo.style.filter = theme === 'dark' ? 'invert(1)' : 'invert(0)';
             
             if (evolutionChart) {
                 setTimeout(updateChart, 100);
