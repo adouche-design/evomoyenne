@@ -422,7 +422,6 @@
             document.getElementById('note-value').value = '';
             document.getElementById('note-max').value = '20';
             document.getElementById('note-coef').value = '1';
-            document.getElementById('ghost-checkbox').classList.remove('checked');
             
             hapticFeedback();
             showSnackbar('Note ajoutée !');
@@ -903,6 +902,14 @@
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
                 applyTheme(e.matches ? 'dark' : 'light');
                     
+            });
+
+            ['note-value', 'note-max', 'note-coef'].forEach(id => {
+                document.getElementById(id).addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        addNote();
+                    }
+                });
             });
         }
 
