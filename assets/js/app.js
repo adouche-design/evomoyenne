@@ -647,19 +647,7 @@
                     const dateF = new Date().toLocaleDateString('fr-FR').replace(/\//g, '-');
                     link.download = `moyenne-de-${name.toLowerCase()}-${dateF}.png`;
                     link.href = canvas.toDataURL();
-                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        navigator.share({
-                            files: [file],
-                            title: 'Ma moyenne générale',
-                            text: `Regarde ma moyenne générale ${selectedEmoji}`
-                        }).catch(() => {});
-                    } else {
-                        const link = document.createElement('a');
-                        link.download = `moyenne-de-${name.toLowerCase()}-${dateF}.png‘;
-                        link.href = canvas.toDataURL();
-                        link.click();
-                }
-            }, 'image/png');
+                    link.click();
                     
                     showSnackbar('Image téléchargée !');
                 } catch (err) {
