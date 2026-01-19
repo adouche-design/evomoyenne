@@ -15,7 +15,7 @@
     <title>evoMoyenne</title>
 
 	<!-- Manifest PWA -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.webmanifest">
 
 	<!--Font and icons-->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -328,28 +328,15 @@
 
     <div class="snackbar" id="snackbar"></div>
 
-	<div class="dialog-overlay" id="feedback-dialog">
-        <div class="dialog" style="max-width: 320px;">
-            <h2 class="dialog-title">Une idée ou un bug ?</h2>
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-                <a href="https://github.com/adouche-design/evomoyenne/issues/new?template=bug_report.yml" target="_blank" class="export-btn" style="text-decoration: none;">
-                    <span class="material-symbols-rounded" style="color: var(--md-sys-color-error);">bug_report</span>
-                    Signaler un bug
-                </a>
-                <a href="https://github.com/adouche-design/evomoyenne/issues/new?template=feature_request.yml" target="_blank" class="export-btn" style="text-decoration: none;">
-                    <span class="material-symbols-rounded" style="color: #4caf50;">lightbulb</span>
-                    Suggérer une idée
-                </a>
-                <a href="https://github.com/adouche-design/evomoyenne/discussions/new?category=général" target="_blank" class="export-btn" style="text-decoration: none;">
-                    <span class="material-symbols-rounded" style="color: #2196f3;">help</span>
-                    Poser une question
-                </a>
-            </div>
-            <div class="dialog-actions">
-                <button class="dialog-btn dialog-btn-secondary" id="close-feedback-dialog">Fermer</button>
-            </div>
-        </div>
-    </div>
+	<script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('SW enregistré !', reg))
+            .catch(err => console.log('Erreur SW...', err));
+        });
+      }
+    </script>
 	
 	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>

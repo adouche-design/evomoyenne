@@ -1,0 +1,69 @@
+name: 🐛 Signaler un bug
+description: "Signaler des bugs nous permet d'améliorer evoMoyenne !"
+title: "[BUG]: "
+
+body:
+  - type: textarea
+    attributes:
+      label: Description du bug
+      description: Plus il y a de détails, plus vite nous pourrons résoudre le bug !
+      placeholder: "La connexion à EcoleDirecte ne fonctionne pas, j'ai un chargement infini lors de la connexion"
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Étapes à reproduire
+      description: Comment pouvons-nous reproduire le bug ?
+      placeholder: |
+        1. Ouvrir l'application
+        2. Se connecter à EcoleDirecte
+        3. Observer le comportement
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Comportement attendu
+      description: "Ce qu'evoMoyenne devrait faire"
+      placeholder: "Que la connexion à EcoleDirecte fonctionne et qu'il n'y ait pas de chargement infini"
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: Appareil
+      description: Sur quel appareil tu as rencontré ce bug ?
+      placeholder: iPhone 17, Googla Pixel 10...
+    validations:
+      required: true
+
+  - type: dropdown
+    attributes:
+      label: "Système d'exploitation"
+      description: Tu as utilisé evoMoyenne depuis...
+      options:
+        - 💩 Android
+        - 🍎 iOS
+        - 💻 macOS
+        - 🪟 Windows
+        - 🐧 Linux
+        - Autre
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: Version utilisée
+      description: Étiquette à côté du logo
+      placeholder: "1.0.1"
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: "Capture(s) d'écran / vidéo"
+      description: Cela permettra une résolution encore plus rapide du bug
+      placeholder: Il faut cliquer sur l'icône 📎 pour pouvoir importer une/des photo(s)/vidéo(s)
+    validations:
+      required: false
