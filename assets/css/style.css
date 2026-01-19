@@ -21,6 +21,7 @@
     --md-sys-color-tertiary: #6a6a6a;
     --md-sys-color-error: #ba1a1a;
     --md-sys-color-success: #2e7d32;
+	--md-sys-color-contrast: #333333;
     --md-sys-color-shadow: rgba(0,0,0,0.15);
     
     /* Radius */
@@ -56,6 +57,7 @@
     --md-sys-color-on-secondary: #1a1a1a;
     --md-sys-color-secondary-container: #2a2a2a;
     --md-sys-color-tertiary: #909090;
+	--md-sys-color-contrast: #CCCCCC;
     --md-sys-color-shadow: rgba(0,0,0,0.4);
 }
 
@@ -85,6 +87,18 @@ body {
 
 .material-symbols-rounded.filled {
     font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+}
+
+.version-badge:active {
+    transform: scale(0.95);
+    opacity: 1;
+    background: var(--md-sys-color-primary-container);
+}
+
+.dialog-content ul li {
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: var(--md-sys-color-on-surface-variant);
 }
 
 /* App Shell */
@@ -469,7 +483,7 @@ body {
 
 .progress-bar {
     height: 100%;
-    background: var(--md-sys-color-primary);
+    background: var(--md-sys-color-contrast);
     border-radius: 4px;
     transition: width var(--transition-medium);
 }
@@ -1075,6 +1089,19 @@ body {
 .emoji-btn.selected {
     background: var(--md-sys-color-primary);
     transform: scale(1.1);
+}
+
+/* Feedback button */
+#feedback-dialog .export-btn {
+    justify-content: flex-start;
+    padding-left: 20px;
+    width: 100%;
+    text-decoration: none;
+    margin-bottom: 8px;
+}
+
+#feedback-dialog .material-symbols-rounded {
+    margin-right: 12px;
 }
 
 /* Generated Share Card */
